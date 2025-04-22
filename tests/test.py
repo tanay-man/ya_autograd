@@ -1,4 +1,4 @@
-from src.tensor import *
+from tensor import *
 
 a = np.array([3])
 b = np.array([2])
