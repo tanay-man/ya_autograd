@@ -17,6 +17,9 @@ class Tensor:
     def __repr__(self):
         return f"Tensor(data={self.data}, requires_grad={self.requires_grad}, grad={self.grad}, grad_func={self._grad_function})"
 
+    def __getitem__(self, index):
+        return Tensor(self.data[index], self.requires_grad, self.grad, self._children, self._grad_function)
+
     def __add__(self, other):
         other = other if isinstance(other, Tensor) else Tensor(other)
         return Tensor(self.data + other.data,
@@ -55,10 +58,11 @@ class Tensor:
         return Tensor(np.max(self.data), self.requires_grad, None, [self], "Max")
 
     def matmul(self, other):
+        if self.data.ndim < 1 or other.data.ndim < 1:
+            raise ValueError(f"matmul: Both operands must have at least 1 dimension. Got {self.data.ndim} and {other.data.ndim}.")
         return Tensor(np.matmul(self.data, other.data),
-                      self.requires_grad or other.requires_grad,
-                      None, [self, other], "MatMul")
-
+                    self.requires_grad or other.requires_grad,
+                    None, [self, other], "MatMul")
     def T(self):
         return Tensor(self.data.T, self.requires_grad, None, [self], "Transpose")
 
@@ -83,7 +87,6 @@ class Tensor:
 
     def tanh(self):
         return Tensor(np.tanh(self.data), self.requires_grad, None, [self], "Tanh")
-
 
     def backward(self, grad: Optional[np.ndarray] = None):
         if not self.requires_grad:
